@@ -5,7 +5,7 @@ Simple utility to watch file changes
 This utility is handy for e.g. automatic testing in combination with a testing frame-work,
 An example lives within the JakeFile
 
- run jake autotest:
+ run: jake autotest
 
 and make changes in the lib/watch/watch.js file or the spec/watchSpec.js file
 
