@@ -1,13 +1,14 @@
 node-watch
 ===========
-Simple utility to watch file changes
+Simple utility for nodejs to watch file changes
+a file change is a files whom's mtime is changed
 
 This utility is handy for e.g. automatic testing in combination with a testing frame-work,
-An example lives within the JakeFile
+An example lives within the JakeFile (jake required, npm install jake)
 
  run: jake autotest
 
-and make changes in the lib/watch/watch.js file or the spec/watchSpec.js file
+and make changes in the lib/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
 
 usage:
 -----
@@ -26,4 +27,31 @@ usage:
 
  // Remove dirs to watch
  watch.remdDir("./spec").remdDir("./lib/watch");
+
+methods:
+-------
+// Add a dir relative from process.cwd()
+watch.addDir("./spec");
+// or
+watch.addDir("../spec");
+
+// Add a dir absolute
+watch.addDir("/absolute/path");
+
+// Set a listener
+// It will provide a file (filename as string), prev and curr objects
+// with file information (before and after the change)
+watch.onChange(function(file,prev,curr){
+		console.log(file);
+		console.log(prev.mtime);
+		console.log(curr,mtime);
+ });
+
+// Remove a dir
+watch.remdDir("./spec");
+
+// Clear the listener(s) attached via onChange();
+watch.clearListeners();
+
+
 
