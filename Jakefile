@@ -23,19 +23,16 @@ task("test",function(){
 });
 desc("Autorun specs");
 task('autotest',function(){
-	console.log('Quite autotest with CTRL - C');
-	var watch = require('./deps/watch/watch.js');
-	
-	var spawn = require('child_process').spawn;
-	var busy = false;
-	var test = null;
-	
+	console.log('Quit autotest with CTRL - C');
+	var watch = require('./deps/watch/watch.js'),
+		spawn = require('child_process').spawn,
+		busy = false,
+		test = null;
+		
 	watch.addDir("./spec").addDir("./lib/watch").onChange(function(file){
 		if(!busy){
 			busy = true;
-			
 			test    = spawn('jake', ['test']);
-	
 			test.stdout.on('data', function (data) {
 				process.stdout.write(data);
 			});
