@@ -4,7 +4,7 @@
 * 
 * description:
 * 	nodejs script that watches on file-changes based on mtime
-*
+* 
 * usage:
 *	
 *	var watch = require('./deps/watch/watch.js');
@@ -60,7 +60,7 @@ var Watch = (function(){
 	
 	Watch.prototype.addDir = function(dir){
 	    // Relative?
-	    if(dir.substring(1,dir.length)=="."){
+	    if(dir.substring(0,1)=="."){
 	    	dir = process.cwd()+"/"+dir;
 	    }
 	    dir = path.normalize(dir);
@@ -84,7 +84,7 @@ var Watch = (function(){
 	
 	Watch.prototype.remDir = function(dir){
 		// Relative?
-	    if(dir.substring(1,dir.length)=="."){
+	    if(dir.substring(0,1)=="."){
 	    	dir = process.cwd()+"/"+dir;
 	    }
 	    dir = path.normalize(dir);
