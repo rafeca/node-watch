@@ -24,7 +24,7 @@ describe('watch module test adding files', function(){
   			event_detected = false, 
   			counter = 0;
   			
-  		watch.watchFile(fp1).on("change",function(){
+  		watch._watchFile(fp1).on("change",function(){
   			counter ++;
   			event_detected = true;
   			stime = new Date().toUTCString();  			
@@ -37,7 +37,7 @@ describe('watch module test adding files', function(){
   		    		expect(event_detected).toBe(true);
   		    		
   		    		watch.removeAllListeners("change");
-  		    		watch.unwatchFile(fp1);
+  		    		watch._unwatchFile(fp1);
   		    		
   		    		expect(watch.listeners("change").length).toBe(0);
   		    		return true;
@@ -84,6 +84,7 @@ describe('watch module test adding dirs', function(){
 			changed_file = "",
   			counter = 0;
   			
+  		expect(function(){watch.onChange({})}).toThrow();	
 		watch.addDir(__dirname+"/tmp").onChange(function(file,prev,curr){
   			counter ++;
   			event_detected = true;
