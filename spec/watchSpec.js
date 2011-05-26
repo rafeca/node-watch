@@ -23,8 +23,8 @@ describe('watch module test adding files', function(){
   			stime = new Date().toUTCString(),
   			event_detected = false, 
   			counter = 0;
-  			
-  		watch._watchFile(fp1).on("change",function(){
+  		
+  		watch.watchFile(fp1).on("change",function(){
   			counter ++;
   			event_detected = true;
   			stime = new Date().toUTCString();  			
@@ -37,7 +37,7 @@ describe('watch module test adding files', function(){
   		    		expect(event_detected).toBe(true);
   		    		
   		    		watch.removeAllListeners("change");
-  		    		watch._unwatchFile(fp1);
+  		    		watch.unwatchFile(fp1);
   		    		
   		    		expect(watch.listeners("change").length).toBe(0);
   		    		return true;
