@@ -6,56 +6,55 @@ a file change is a file whom's mtime is changed
 This utility is handy for e.g. automatic testing in combination with a testing frame-work,
 An example lives within the JakeFile (jake required, npm install jake)
 
- run: jake autotest
+    run: jake autotest
 
 and make changes in the lib/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
 
 usage:
 -----
-<code>
- var watch = require('./deps/watch/watch.js');
- // Adding 2 dirs relative from process.cwd()
- // Nested dirs are not watched
- // dirs can also be added absolute
- watch.addDir("./spec").addDir("./lib/watch").onChange(function(file,prev,curr){
-		console.log(file);
-		console.log(prev.mtime);
-		console.log(curr,mtime);
- });
 
- // Clear (remove) the listeners
- watch.clearListeners();
-
- // Remove dirs to watch
- watch.remdDir("./spec").remdDir("./lib/watch");
+     var watch = require('./deps/watch/watch.js');
+     // Adding 2 dirs relative from process.cwd()
+     // Nested dirs are not watched
+     // dirs can also be added absolute
+     watch.addDir("./spec").addDir("./lib/watch").onChange(function(file,prev,curr){
+        console.log(file);
+        console.log(prev.mtime);
+        console.log(curr,mtime);
+     });
+     
+     // Clear (remove) the listeners
+     watch.clearListeners();
+     
+     // Remove dirs to watch
+     watch.remdDir("./spec").remdDir("./lib/watch");
  
-<code>
 
 methods:
 -------
-<code>
- // Add a dir relative from process.cwd()
- watch.addDir("./spec");
- // or
- watch.addDir("../spec");
- 
- // Add a dir absolute
- watch.addDir("/absolute/path");
- 
- // Set a listener
- // It will provide a file (filename as string), prev and curr objects
- // with file information (before and after the change)
- watch.onChange(function(file,prev,curr){
- 		console.log(file);
- 		console.log(prev.mtime);
- 		console.log(curr,mtime);
-  });
- 
- // Remove a dir
- watch.remdDir("./spec");
- 
- // Clear the listener(s) attached via onChange();
- watch.clearListeners();
 
-</code>
+     // Add a dir relative from process.cwd()
+     watch.addDir("./spec");
+     // or
+     watch.addDir("../spec");
+     
+     // Add a dir absolute
+     watch.addDir("/absolute/path");
+     
+     // Set a listener
+     // It will provide a file (filename as string), prev and curr objects
+     // with file information (before and after the change)
+     watch.onChange(function(file,prev,curr){
+            console.log(file);
+            console.log(prev.mtime);
+            console.log(curr,mtime);
+      });
+     
+     // Remove a dir
+     watch.remdDir("./spec");
+     
+     // Clear the listener(s) attached via onChange();
+     watch.clearListeners();
+
+
 
