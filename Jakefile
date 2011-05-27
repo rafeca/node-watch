@@ -1,7 +1,8 @@
 desc("create docs");
 task("doc",function(){
-    spawn = require('child_process').spawn;
-    doc    = spawn('docco', ['lib/watch/watch.js']);
+    var spawn = require('child_process').spawn,
+        doc = spawn('docco', ['lib/watch/watch.js']);
+    
     doc.stdout.on('data', function (data) {
          process.stdout.write(data);
     });
