@@ -8,19 +8,19 @@ An example lives within the JakeFile (jake required, npm install jake)
 
     run: jake autotest
 
-and make changes in the lib/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
+and make changes in the src/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
 
 usage:
 -----
 
-     var watch = require('./deps/watch/watch.js');
+     var watch = require('./lib/watch/watch.js');
      // Adding 2 dirs relative from process.cwd()
      // Nested dirs are not watched
      // dirs can also be added absolute
      watch.addDir("./spec").addDir("./lib/watch").onChange(function(file,prev,curr){
         console.log(file);
-        console.log(prev.mtime);
-        console.log(curr,mtime);
+        console.log(prev.mtime.getTime());
+        console.log(curr.mtime.getTime());
      });
      
      // Clear (remove) the listeners
