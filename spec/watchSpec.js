@@ -3,10 +3,10 @@
 TODO:
 make the test faster by mocking the async callbacks
 
+dev_mod is set in the JakeFile either src or lib
 */
 var fs = require("fs"); 
-var watch = require("../lib/watch/watch.js"); 
-
+var watch = require("../"+dev_mode+"/watch/watch.js"); 
 
 describe('watch module test adding files', function(){
 	it('should be an object', function(){
@@ -22,10 +22,16 @@ describe('watch module test adding files', function(){
   		var fp1 = __dirname+"/tmp/file1.txt",
   			stime = new Date().toUTCString(),
   			event_detected = false, 
+  			changed_file = "",
+  			changed_prev = "",
+  			changed_curr = "",
   			counter = 0;
   		
-  		watch.watchFile(fp1).on("change",function(){
+  		watch.watchFile(fp1).on("change",function(file,prev,curr){
   			counter ++;
+  			changed_file = file;
+  			changed_prev = prev;
+  			changed_curr = curr;
   			event_detected = true;
   			stime = new Date().toUTCString();  			
   		});
@@ -35,10 +41,10 @@ describe('watch module test adding files', function(){
   		    	if(counter>0){
   		    		asyncSpecDone();
   		    		expect(event_detected).toBe(true);
-  		    		
+  		    		expect(changed_file).toEqual(fp1);
+  		    		expect(changed_prev.mtime.getTime()).not.toEqual(changed_curr.mtime.getTime());
   		    		watch.removeAllListeners("change");
   		    		watch.unwatchFile(fp1);
-  		    		
   		    		expect(watch.listeners("change").length).toBe(0);
   		    		return true;
   		    	}
