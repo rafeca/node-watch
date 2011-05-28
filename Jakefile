@@ -5,7 +5,7 @@ task("build",["test_integration","doc"],function(){
     var pro = require("./deps/uglify-js/uglify-js.js").uglify;
     var orig_code = fs.readFileSync(process.cwd()+"/src/watch/watch.js").toString();
     var ast = jsp.parse(orig_code); // parse code and get the initial AST
-    ast = pro.ast_mangle(ast); // get a new AST with mangled names
+    // ast = pro.ast_mangle(ast); // get a new AST with mangled names
     // ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
     var options = {};
     options.beautify = true;
