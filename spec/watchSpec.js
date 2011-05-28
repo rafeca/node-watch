@@ -32,8 +32,7 @@ describe('watch module test adding files', function(){
   			changed_file = file;
   			changed_prev = prev;
   			changed_curr = curr;
-  			event_detected = true;
-  			stime = new Date().toUTCString();  			
+  			event_detected = true;			
   		});
   		// Wat for the trigger
   		waitsFor(function() {
