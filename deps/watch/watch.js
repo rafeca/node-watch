@@ -1,91 +1,92 @@
-"use strict";
-
 var EventEmitter = require("events").EventEmitter, fs = require("fs"), path = require("path");
 
-var _extends = function(a, b) {
-    function d() {
-        this.constructor = a;
+var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) {
+        if (__hasProp.call(parent, key)) {
+            child[key] = parent[key];
+        }
     }
-    for (var c in b) {
-        if (__hasProp.call(b, c)) a[c] = b[c];
+    function ctor() {
+        this.constructor = child;
     }
-    d.prototype = b.prototype;
-    a.prototype = new d;
-    a.__super__ = b.prototype;
-    return a;
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
 };
 
 var Watch = function() {
-    function b() {}
-    _extends(b, EventEmitter);
-    var a = [];
-    b.prototype.addDir = function(b) {
-        if (b.substring(0, 1) == ".") {
-            b = process.cwd() + "/" + b;
+    "use strict";
+    __extends(Watch, EventEmitter);
+    var dirs = [];
+    function Watch(options) {}
+    Watch.prototype.addDir = function(dir) {
+        if (dir.substring(0, 1) == ".") {
+            dir = process.cwd() + "/" + dir;
         }
-        b = path.normalize(b);
-        if (fs.statSync(b).isDirectory()) {
-            if (a.indexOf(b) != -1) {
+        dir = path.normalize(dir);
+        if (fs.statSync(dir).isDirectory()) {
+            if (dirs.indexOf(dir) != -1) {
                 return this;
             }
-            a.push(b);
-            var c = fs.readdirSync(b);
-            for (var d = 0; d < c.length; d++) {
-                var e = b + "/" + c[d];
-                if (fs.statSync(e).isFile()) {
-                    this.watchFile(e);
+            dirs.push(dir);
+            var files = fs.readdirSync(dir);
+            for (var i = 0; i < files.length; i++) {
+                var full_path = dir + "/" + files[i];
+                if (fs.statSync(full_path).isFile()) {
+                    this.watchFile(full_path);
                 }
             }
         }
         return this;
     };
-    b.prototype.remDir = function(b) {
-        if (b.substring(0, 1) == ".") {
-            b = process.cwd() + "/" + b;
+    Watch.prototype.remDir = function(dir) {
+        if (dir.substring(0, 1) == ".") {
+            dir = process.cwd() + "/" + dir;
         }
-        b = path.normalize(b);
-        var c = a.indexOf(b);
-        if (c > -1) {
-            a.splice(c, 1);
+        dir = path.normalize(dir);
+        var index_search = dirs.indexOf(dir);
+        if (index_search > -1) {
+            dirs.splice(index_search, 1);
         } else {
-            throw "No such directory to watch: " + b;
+            throw "No such directory to watch: " + dir;
         }
-        if (fs.statSync(b).isDirectory()) {
-            var d = fs.readdirSync(b);
-            for (var e = 0; e < d.length; e++) {
-                var f = b + "/" + d[e];
-                if (fs.statSync(f).isFile()) {
-                    this.unwatchFile(f);
+        if (fs.statSync(dir).isDirectory()) {
+            var files = fs.readdirSync(dir);
+            for (var i = 0; i < files.length; i++) {
+                var full_path = dir + "/" + files[i];
+                if (fs.statSync(full_path).isFile()) {
+                    this.unwatchFile(full_path);
                 }
             }
         }
         return this;
     };
-    b.prototype.onChange = function(a) {
-        this.on("change", a);
+    Watch.prototype.onChange = function(cb) {
+        this.on("change", cb);
         return this;
     };
-    b.prototype.clearListeners = function() {
+    Watch.prototype.clearListeners = function() {
         this.removeAllListeners("change");
         return this;
     };
-    b.prototype.watchFile = function(a) {
-        var b = this;
-        fs.watchFile(a, function(c, d) {
-            if (c.mtime.getTime() != d.mtime.getTime()) {
-                b.emit("change", a, c, d);
+    Watch.prototype.watchFile = function(file) {
+        var self = this;
+        fs.watchFile(file, function(prev, curr) {
+            if (prev.mtime.getTime() != curr.mtime.getTime()) {
+                self.emit("change", file, prev, curr);
             }
         });
-        return b;
+        return self;
     };
-    b.prototype.unwatchFile = function(a) {
-        fs.unwatchFile(a);
+    Watch.prototype.unwatchFile = function(file) {
+        fs.unwatchFile(file);
         return this;
     };
-    b.prototype._helperGetWatchedDirs = function() {
-        return a;
+    Watch.prototype._helperGetWatchedDirs = function() {
+        return dirs;
     };
-    return b;
+    return Watch;
 }();
 
-module.exports = new Watch;
+module.exports = new Watch({});
