@@ -1,4 +1,3 @@
-'use strict';
 // [Node-watch](https://github.com/jorritd/node-watch) Is a small [nodejs](http://www.nodejs.org/) module/lib to watch for filechanges.
 // Filechanges are changes where the mtime (make-time) of file's changes.
 // This situation happens when a file is overwritten. (e.g. altered and safed)
@@ -33,9 +32,16 @@ var EventEmitter = require('events').EventEmitter,
     path = require("path");
 // *private helper function:* 
 // extends child with the prototypes of parent and return the extended child 
-var _extends = function(child, parent) {
-  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-  function ctor() { this.constructor = child; }
+var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) {
+  for (var key in parent) { 
+    if (__hasProp.call(parent, key)){
+        child[key] = parent[key]; 
+    }
+  }
+  function ctor() { 
+    this.constructor = child; 
+  }
   ctor.prototype = parent.prototype;
   child.prototype = new ctor;
   child.__super__ = parent.prototype;
@@ -44,14 +50,16 @@ var _extends = function(child, parent) {
 
 // ## Watch class declaration ##
 // extends from [EventEmitter](http://nodejs.org/docs/v0.4.8/api/events.html#events.EventEmitter)
-var Watch = (function(){
-  _extends(Watch, EventEmitter);
+var WatchClass = (function(){
+    "use strict";
+    __extends(Watch, EventEmitter);
   // #### dirs, array,  holds a collection of dirs being 'watched' ####
   var dirs = [];
   // ### Watch class Constructor ###
-  function Watch(){
-      
+  function Watch(options){
+  //     // 
   };
+  
   // ### Public method: addDir(string) ###
   Watch.prototype.addDir = function(dir){
       // Add a dir relative './mydir' or '../mydir' from process.cwd()
@@ -173,5 +181,5 @@ var Watch = (function(){
 })();
 
 // create a new object and export an instance of Watch
-module.exports = new Watch();
+module.exports = new WatchClass();
 
