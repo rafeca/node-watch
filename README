@@ -1,5 +1,5 @@
-node-watch
-===========
+# node-watch
+
 Simple utility for nodejs to watch file changes
 a file change is a file whom's mtime is changed
 
@@ -10,14 +10,14 @@ An example lives within the JakeFile (jake required, npm install jake)
 
 and make changes in the src/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
 
-usage:
------
+## usage:
+
 
      var watch = require('./lib/watch/watch.js');
      // Adding 2 dirs relative from process.cwd()
      // Nested dirs are not watched
      // dirs can also be added absolute
-     watch.addDir("./spec").addDir("./lib/watch").onChange(function(file,prev,curr){
+     watch.add("./spec").add("./lib/watch").onChange(function(file,prev,curr){
         console.log(file);
         console.log(prev.mtime.getTime());
         console.log(curr.mtime.getTime());
@@ -27,19 +27,20 @@ usage:
      watch.clearListeners();
      
      // Remove dirs to watch
-     watch.remdDir("./spec").remdDir("./lib/watch");
+     watch.remove("./spec").remdDir("./lib/watch");
  
 
-methods:
--------
+## methods:
 
-     // Add a dir relative from process.cwd()
-     watch.addDir("./spec");
+
+     // Add a dir or file relative from process.cwd()
+     watch.add("./spec");
      // or
-     watch.addDir("../spec");
-     
+     watch.add("../spec");
+     // or
+     watch.add("../path/to/my/file.js")
      // Add a dir absolute
-     watch.addDir("/absolute/path");
+     watch.add("/absolute/path");
      
      // Set a listener
      // It will provide a file (filename as string), prev and curr objects
@@ -50,8 +51,8 @@ methods:
             console.log(curr,mtime);
       });
      
-     // Remove a dir
-     watch.remdDir("./spec");
+     // Remove a dir or file (absolute or relative)
+     watch.remove("./spec");
      
      // Clear the listener(s) attached via onChange();
      watch.clearListeners();
