@@ -89,7 +89,7 @@ task('autotest',function(){
         busy = false,
         test = null;
         
-    watch.addDir("./spec").addDir("./src/watch").onChange(function(file){
+    watch.add("./spec").add("./src/watch").onChange(function(file){
         if(!busy){
             busy = true;
             test    = spawn('jake', ['test']);

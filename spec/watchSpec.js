@@ -7,7 +7,7 @@ dev_mod is set in the JakeFile either src or lib
 */
 var fs = require("fs"); 
 var watch = require("../"+dev_mode+"/watch/watch.js"); 
-
+// 
 describe('watch module test adding files', function(){
 	it('should be an object', function(){
   		expect(typeof watch).toEqual("object");
@@ -27,7 +27,7 @@ describe('watch module test adding files', function(){
   			changed_curr = "",
   			counter = 0;
   		
-  		watch.watchFile(fp1).on("change",function(file,prev,curr){
+  		watch.add(fp1).on("change",function(file,prev,curr){
   			counter ++;
   			changed_file = file;
   			changed_prev = prev;
@@ -43,7 +43,7 @@ describe('watch module test adding files', function(){
   		    		expect(changed_file).toEqual(fp1);
   		    		expect(changed_prev.mtime.getTime()).not.toEqual(changed_curr.mtime.getTime());
   		    		watch.removeAllListeners("change");
-  		    		watch.unwatchFile(fp1);
+  		    		watch.remove(fp1);
   		    		expect(watch.listeners("change").length).toBe(0);
   		    		return true;
   		    	}
@@ -61,25 +61,21 @@ describe('watch module test adding files', function(){
 describe('watch module test adding dirs', function(){
 	
 	it('should be possible to add dirs to watch', function(){
-		expect(typeof watch.addDir).toEqual("function");
+		expect(typeof watch.add).toEqual("function");
 		// This dir does not excists (relative form process.cwd())
-		expect(function(){watch.addDir("./no_dirs")}).toThrow();
+		expect(function(){watch.add("./no_dirs")}).toThrow();
 		// This should be allright
-		expect(function(){watch.addDir(__dirname+"/tmp")}).not.toThrow();
-		// There should be 1 entry in de dirs array
-		expect(watch._helperGetWatchedDirs().length).toBe(1);
+		expect(function(){watch.add(__dirname+"/tmp")}).not.toThrow();
+		
 		// Add a second dir (the same) which sould not be added
-		expect(function(){watch.addDir(__dirname+"/tmp")}).not.toThrow();
-		// Still one
-		expect(watch._helperGetWatchedDirs().length).toBe(1);
-	
+		expect(function(){watch.add(__dirname+"/tmp")}).not.toThrow();
+		
 	}); 
 	it('should be possible to remove dirs to watch', function(){
-		expect(typeof watch.remDir).toEqual("function");
+		expect(typeof watch.remove).toEqual("function");
 		// Remove a non - excisting dir
-		expect(function(){watch.remDir("./no_dirs")}).toThrow();
-		expect(function(){watch.remDir(__dirname+"/tmp")}).not.toThrow();
-		expect(watch._helperGetWatchedDirs().length).toBe(0);	
+		expect(function(){watch.remove("./no_dirs")}).toThrow();
+		expect(function(){watch.remove(__dirname+"/tmp")}).not.toThrow();
 	}); 
 	
 	it('should emit a change on a watched dir', function(){
@@ -90,7 +86,7 @@ describe('watch module test adding dirs', function(){
   			counter = 0;
   			
   		expect(function(){watch.onChange({})}).toThrow();	
-		watch.addDir(__dirname+"/tmp").onChange(function(file,prev,curr){
+		watch.add(__dirname+"/tmp").onChange(function(file,prev,curr){
   			counter ++;
   			event_detected = true;
   			stime = new Date().toUTCString();  	
@@ -104,7 +100,7 @@ describe('watch module test adding dirs', function(){
   		    		expect(fp1).toBe(changed_file);
   		    		
   		    		watch.clearListeners();
-  		    		watch.remDir(__dirname+"/tmp");
+  		    		watch.remove(__dirname+"/tmp");
   		    		expect(watch.listeners("change").length).toBe(0);
   		    		return true;
   		    	}
@@ -122,9 +118,9 @@ describe('watch module test adding dirs', function(){
 describe('watch module chainabiliy test', function(){
 	
 	it('should return THIS on method calls for chainability',function(){
-		var test1 = watch.addDir(__dirname+"/tmp");
+		var test1 = watch.add(__dirname+"/tmp");
 		expect(test1).toBe(watch);
-		var test2 = watch.remDir(__dirname+"/tmp");
+		var test2 = watch.remove(__dirname+"/tmp");
 		expect(test2).toBe(watch);
 		var test3 = watch.onChange(function(file,prev,curr){
 			// NOTHING
@@ -134,4 +130,47 @@ describe('watch module chainabiliy test', function(){
 		expect(test4).toBe(watch);
 	});
 	
+});
+
+describe("watch module add , remove relative file", function() {
+    it("should add relative files to", function() {
+        var fp1 = "./tmp/file2.txt", fpa = __dirname + "/tmp/file2.txt", 
+        stime = (new Date).toUTCString(), event_detected = false, 
+        changed_file = "", changed_prev = "", changed_curr = "", counter = 0;
+        expect(function() {
+            watch.add(fp1);
+        }).toThrow();
+        expect(function() {
+            watch.remove(fp1);
+        }).toThrow();
+        fp1 = "./spec/tmp/file2.txt";
+        var tst = watch.add(fp1);
+        expect(tst).toBe(watch);
+        expect(watch.listeners("change").length).toBe(0);
+        watch.on("change", function(file, prev, curr) {
+            counter++;
+            changed_file = file;
+            changed_prev = prev;
+            changed_curr = curr;
+            event_detected = true;
+        });
+        expect(watch.listeners("change").length).toBe(1);
+        waitsFor(function() {
+            if (event_detected) {
+                if (counter > 0) {
+                    asyncSpecDone();
+                    expect(event_detected).toBe(true);
+                    expect(changed_prev.mtime.getTime()).not.toEqual(changed_curr.mtime.getTime());
+                    watch.removeAllListeners("change");
+                    watch.remove(fp1);
+                    expect(watch.listeners("change").length).toBe(0);
+                    return true;
+                }
+            }
+            return false;
+        }, "The event is not detected", 2e4);
+        asyncSpecWait.timeout = 10 * 1e3;
+        asyncSpecWait();
+        fs.writeFileSync(fpa, stime);
+    });
 });
