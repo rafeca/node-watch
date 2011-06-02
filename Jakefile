@@ -1,8 +1,8 @@
 desc("create build file");
 task("build",["test_integration","doc"],function(){
     var fs = require("fs");
-    var jsp = require("./deps/uglify-js/uglify-js.js").parser;
-    var pro = require("./deps/uglify-js/uglify-js.js").uglify;
+    var jsp = require("uglify-js").parser;
+    var pro = require("uglify-js").uglify;
     var orig_code = fs.readFileSync(process.cwd()+"/src/watch/watch.js").toString();
     var ast = jsp.parse(orig_code); // parse code and get the initial AST
     // ast = pro.ast_mangle(ast); // get a new AST with mangled names
@@ -32,7 +32,7 @@ task("doc",function(){
 desc("run specs");
 task("test",function(){
     // Jasmine is cool
-    var jasmine = require('./deps/jasmine-node');
+    var jasmine = require('jasmine-node');
     
     jasmine.dev_mode = "src";
     
@@ -58,7 +58,7 @@ task("test",function(){
 desc("run specs for integration");
 task("test_integration",function(){
     // Jasmine is cool
-    var jasmine = require('./deps/jasmine-node');
+    var jasmine = require('jasmine-node');
     
     jasmine.dev_mode = "lib";
     
@@ -84,7 +84,7 @@ task("test_integration",function(){
 desc("Autorun specs");
 task('autotest',function(){
     console.log('Quit autotest with CTRL - C');
-    var watch = require('./deps/watch/watch.js'),
+    var watch = require('nodewatch'),
         spawn = require('child_process').spawn,
         busy = false,
         test = null;

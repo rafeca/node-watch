@@ -1,0 +1,6 @@
+.*
+Jakefile
+deps/
+spec/
+src/
+node_modules/
