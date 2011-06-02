@@ -137,6 +137,7 @@ describe("watch module add , remove relative file", function() {
         var fp1 = "./tmp/file2.txt", fpa = __dirname + "/tmp/file2.txt", 
         stime = (new Date).toUTCString(), event_detected = false, 
         changed_file = "", changed_prev = "", changed_curr = "", counter = 0;
+        
         expect(function() {
             watch.add(fp1);
         }).toThrow();

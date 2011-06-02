@@ -25,7 +25,7 @@
 //     
 //     // Remove dirs to watch
 //     watch.remove("./spec").remove("./lib/watch");
-// 
+//  
 
 // *nodejs requirements: EventEmitter, fs, path*
 var EventEmitter = require("events").EventEmitter, fs = require("fs"), path = require("path");
