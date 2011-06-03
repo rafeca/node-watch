@@ -5,9 +5,19 @@
 // It uses the standard nodejs [EventEmitter](http://nodejs.org/docs/v0.4.8/api/events.html#events.EventEmitter) as base and therefor has all the methods
 // and properties an EventEmitter has. 
 // 
-// ####usage:
+//#### Install:
+//
+//Local (in "./node_modules"):
+//
+//     npm install nodewatch
+//
+//Global :
+//
+//     npm install nodewatch -g
+//
+//#### Usage:
 // 
-//     var watch = require('./deps/watch/watch.js');
+//     var watch = require('nodewatch');
 //     
 //     // Adding 2 dirs relative from process.cwd()
 //     // Adding Abolute paths works as well

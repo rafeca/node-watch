@@ -1,6 +1,11 @@
-.*
 Jakefile
-deps/
-spec/
-src/
-node_modules/
+README
+deps/*
+spec/*
+src/*
+node_modules/jasmine-node/*
+node_modules/nodewatch/*
+node_modules/uglify-js/*
+node_modules/.bin/*
+.gitignore
+.npmignore

@@ -5,9 +5,21 @@ This situation happens when a file is overwritten. (e.g. safed)
 It uses the standard nodejs <a href="http://nodejs.org/docs/v0.4.8/api/events.html#events.EventEmitter">EventEmitter</a> as base and therefor has all the methods
 and properties an EventEmitter has. </p>
 
-<h4>usage:</h4>
+<h4>Install:</h4>
 
-<pre><code>var watch = require('./deps/watch/watch.js');
+<p>Local (in "./node_modules"):</p>
+
+<pre><code>npm install nodewatch
+</code></pre>
+
+<p>Global :</p>
+
+<pre><code>npm install nodewatch -g
+</code></pre>
+
+<h4>Usage:</h4>
+
+<pre><code>var watch = require('nodewatch');
 
 // Adding 2 dirs relative from process.cwd()
 // Adding Abolute paths works as well

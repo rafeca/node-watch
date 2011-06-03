@@ -4,16 +4,24 @@ Simple utility for nodejs to watch file changes
 a file change is a file whom's mtime is changed
 
 This utility is handy for e.g. automatic testing in combination with a testing frame-work,
-An example lives within the JakeFile (jake required, npm install jake)
+An example lives within the JakeFile (jake and docco required)
 
     run: jake autotest
 
 and make changes in the src/watch/watch.js file or the spec/watchSpec.js file and see te specs running automaticly
 
-## usage:
+## Install:
 
 
-     var watch = require('./lib/watch/watch.js');
+
+     npm install nodewatch
+     
+(Use the "-g" global switch for installing nodewatch global)
+
+## Usage:
+
+
+     var watch = require('nodewatch');
      // Adding 2 dirs relative from process.cwd()
      // Nested dirs are not watched
      // dirs can also be added absolute
@@ -30,7 +38,7 @@ and make changes in the src/watch/watch.js file or the spec/watchSpec.js file an
      watch.remove("./spec").remdDir("./lib/watch");
  
 
-## methods:
+## Methods:
 
 
      // Add a dir or file relative from process.cwd()
@@ -43,12 +51,11 @@ and make changes in the src/watch/watch.js file or the spec/watchSpec.js file an
      watch.add("/absolute/path");
      
      // Set a listener
-     // It will provide a file (filename as string), prev and curr objects
-     // with file information (before and after the change)
+     // It will provide a file (filename as string), prev and curr stats objects
      watch.onChange(function(file,prev,curr){
             console.log(file);
-            console.log(prev.mtime);
-            console.log(curr,mtime);
+            console.log(prev.mtime.getTime());
+            console.log(curr.mtime.getTime());
       });
      
      // Remove a dir or file (absolute or relative)
