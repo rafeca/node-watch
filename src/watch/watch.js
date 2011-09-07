@@ -160,6 +160,9 @@ var WatchClass = function() {
                 this.__file(add, full_path);
             }
         }
+        // Start watching the dir also
+        this.__file(add, dir);
+
         return this;
     };
     
@@ -171,9 +174,28 @@ var WatchClass = function() {
         var self = this;
         if (add) {
             fs.watchFile(file, function(prev, curr) {
-                if (prev.mtime.getTime() != curr.mtime.getTime()) {
+              try{
+                // If the modified file is a folder, Recheck it again for newly
+                // created files or removed files
+                if (fs.statSync(file) && fs.statSync(file).isDirectory()) {
+                    self.__handle(false, file);
+                    self.__handle(true, file);
+                    if (prev.nlink !== curr.nlink) {
+                        self.emit("change", file, prev, curr);
+                    }
+                // Check if the modified time has changed and emit event
+                } else if (prev.mtime.getTime() != curr.mtime.getTime()) {
                     self.emit("change", file, prev, curr);
                 }
+              }
+              // A file inside the directory has been removed, emit event  
+              catch(e) {
+                if (e.code === 'ENOENT') {
+                  self.emit("change", file, prev, curr);
+                  return;
+                }
+                throw(e);
+              }
             });
         } else {
             fs.unwatchFile(file);
