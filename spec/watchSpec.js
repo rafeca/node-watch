@@ -113,6 +113,85 @@ describe('watch module test adding dirs', function(){
     	fs.writeFileSync(fp1, stime);
 	}); 
 	
+	it('should emit a change on a watched dir when a new file is created', function(){
+		var folder = __dirname + "/tmp",
+			stime = new Date().toUTCString(),
+			fp1 = folder + "/new_file1.txt";
+  			
+  	expect(function(){watch.onChange({})}).toThrow();	
+		watch.add(folder).onChange(function(file,prev,curr){
+			expect(file).toBe(folder);
+  		
+  		watch.remove(folder);
+  		watch.clearListeners();
+  		expect(watch.listeners("change").length).toBe(0);
+  		fs.unlinkSync(fp1);
+  		asyncSpecDone();
+	  });
+  		
+  	fs.writeFileSync(fp1, stime);
+  		    	
+    asyncSpecWait.timeout = 10 * 1000;
+  	asyncSpecWait();
+	});
+	
+	it('should emit a change when a newly created file is modified on a watched dir', function(){
+		var folder = __dirname + "/tmp",
+			stime = new Date().toUTCString(),
+			fp1 = folder + "/new_file2.txt",
+			fileCreated = false;
+  			
+  	expect(function(){watch.onChange({})}).toThrow();	
+		watch.add(folder).onChange(function(file,prev,curr){
+			if (fileCreated === false) {
+			  fileCreated = true;
+    		expect(file).toBe(folder);
+  		
+  		  // modify the created file
+  		  fs.writeFileSync(fp1, stime + " - " + stime);
+  		} else {
+  		  expect(file).toBe(fp1);
+  		  
+  		  watch.clearListeners();
+    		watch.remove(folder);
+    		expect(watch.listeners("change").length).toBe(0);
+  		  
+    		fs.unlinkSync(fp1);
+  		  asyncSpecDone();
+		  }
+	  });
+	  
+  	fs.writeFileSync(fp1, stime);
+  		    	
+    asyncSpecWait.timeout = 20 * 1000;
+  	asyncSpecWait();
+	});
+	
+	it('should emit a change when a file is removed from a folder', function(){
+		var folder = __dirname + "/tmp",
+			stime = new Date().toUTCString(),
+			fp1 = folder + "/new_file3.txt",
+			fileCreated = false;
+  	
+  	fs.writeFileSync(fp1, stime);
+  	  	
+  	expect(function(){watch.onChange({})}).toThrow();	
+		watch.add(folder).onChange(function(file,prev,curr){
+  		expect(file).toBe(fp1);
+  		  
+  		watch.clearListeners();
+    	watch.remove(folder);
+    	expect(watch.listeners("change").length).toBe(0);
+  		  
+  		asyncSpecDone();
+	  });
+  		    	
+  	fs.unlinkSync(fp1);
+  		    	
+    asyncSpecWait.timeout = 10 * 1000;
+  	asyncSpecWait();
+	});
+	
 });
 
 describe('watch module chainabiliy test', function(){
