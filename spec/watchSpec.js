@@ -6,7 +6,7 @@ make the test faster by mocking the async callbacks
 dev_mod is set in the JakeFile either src or lib
 */
 var fs = require("fs"); 
-var watch = require("../src/watch/watch.js"); 
+var watch = require("../"+dev_mode+"/watch/watch.js"); 
 // 
 describe('watch module test adding files', function(){
 	it('should be an object', function(){
