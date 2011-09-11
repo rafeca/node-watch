@@ -191,6 +191,23 @@ describe('watch module test adding dirs', function(){
   	asyncSpecWait();
 	});
 	
+	it('should look for changes in files inside a nested folder', function(){
+		var folder = __dirname + "/tmp",
+		    stime = new Date().toUTCString(),
+		    fp1 = folder + "/nested_folder/file1.txt";
+
+		expect(function() {watch.onChange({})}).toThrow();
+		watch.add(folder).onChange(function(file, prev, curr) {
+			expect(file).toBe(fp1);
+			watch.clearListeners();
+			expect(watch.listeners("change").length).toBe(0);
+		 	asyncSpecDone();
+		});
+		fs.writeFileSync(fp1, stime);
+
+		asyncSpecWait.timeout = 10 * 1000;
+		asyncSpecWait();
+	});
 });
 
 describe('watch module chainabiliy test', function(){

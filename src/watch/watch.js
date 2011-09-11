@@ -158,6 +158,10 @@ var WatchClass = function() {
             var full_path = dir + "/" + files[i];
             if (fs.statSync(full_path).isFile()) {
                 this.__file(add, full_path);
+                // If we read a directory, call recursively to `__dir` method
+                // to be able to handle changes in files inside this directory
+            } else if (fs.statSync(full_path).isDirectory()) {
+                this.__dir(add, full_path);
             }
         }
         // Start watching the dir also
