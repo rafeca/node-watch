@@ -139,74 +139,175 @@ describe('watch module test adding dirs', function(){
 			stime = new Date().toUTCString(),
 			fp1 = folder + "/new_file2.txt",
 			fileCreated = false;
-  			
-	expect(function(){watch.onChange({})}).toThrow();	
+
+		expect(function(){watch.onChange({})}).toThrow();
 		watch.add(folder).onChange(function(file,prev,curr){
 			if (fileCreated === false) {
-			  fileCreated = true;
-    		expect(file).toBe(folder);
-  		
-  		  // modify the created file
-  		  fs.writeFileSync(fp1, stime + " - " + stime);
-  		} else {
-			expect(file).toBe(fp1);
+				fileCreated = true;
+				expect(file).toBe(folder);
 
-			watch.clearListeners();
-			watch.remove(folder);
-			expect(watch.listeners("change").length).toBe(0);
+				// modify the created file
+				fs.writeFileSync(fp1, stime + " - " + stime);
+			} else {
+				expect(file).toBe(fp1);
 
-			fs.unlinkSync(fp1);
-			asyncSpecDone();
-		}
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+
+				fs.unlinkSync(fp1);
+				asyncSpecDone();
+			}
+		});
+
+		fs.writeFileSync(fp1, stime);
+
+		asyncSpecWait.timeout = 20 * 1000;
+		asyncSpecWait();
 	});
-	  
-  	fs.writeFileSync(fp1, stime);
-  		    	
-    asyncSpecWait.timeout = 20 * 1000;
-  	asyncSpecWait();
-	});
-	
+
 	it('should emit a change when a file is removed from a folder', function(){
 		var folder = __dirname + "/tmp",
 			stime = new Date().toUTCString(),
 			fp1 = folder + "/new_file3.txt",
 			fileCreated = false;
-  	
-  	fs.writeFileSync(fp1, stime);
-  	  	
-  	expect(function(){watch.onChange({})}).toThrow();	
-		watch.add(folder).onChange(function(file,prev,curr){
-  		expect(file).toBe(fp1);
-  		  
-  		watch.clearListeners();
-    	watch.remove(folder);
-    	expect(watch.listeners("change").length).toBe(0);
-  		  
-  		asyncSpecDone();
-	  });
-  		    	
-  	fs.unlinkSync(fp1);
-  		    	
-    asyncSpecWait.timeout = 10 * 1000;
-  	asyncSpecWait();
-	});
-	
-	it('should look for changes in files inside a nested folder', function(){
-		var folder = __dirname + "/tmp",
-		    stime = new Date().toUTCString(),
-		    fp1 = folder + "/nested_folder/file1.txt";
 
-		expect(function() {watch.onChange({})}).toThrow();
-		watch.add(folder).onChange(function(file, prev, curr) {
-			expect(file).toBe(fp1);
-			watch.clearListeners();
-			expect(watch.listeners("change").length).toBe(0);
-		 	asyncSpecDone();
-		});
 		fs.writeFileSync(fp1, stime);
+
+		expect(function(){watch.onChange({})}).toThrow();
+		watch.add(folder).onChange(function(file,prev,curr){
+
+			expect(file).toBe(folder);
+
+			watch.clearListeners();
+			watch.remove(folder);
+			expect(watch.listeners("change").length).toBe(0);
+
+            asyncSpecDone();
+		});
+
+		fs.unlinkSync(fp1);
 
 		asyncSpecWait.timeout = 10 * 1000;
 		asyncSpecWait();
+	});
+
+
+	describe('Non-recursive watching', function(){
+
+		it('should not watch recursively by default', function(){
+			var folder = __dirname + "/tmp",
+			    stime = new Date().toUTCString(),
+			    fp1 = folder + "/nested_folder/file1.txt",
+			    changeHandlerCalled = false;
+
+			expect(function() {watch.onChange({})}).toThrow();
+			watch.add(folder).onChange(function(file, prev, curr) {
+				changeHandlerCalled = true;
+			});
+			fs.writeFileSync(fp1, stime);
+
+			waits(10*1000);
+
+			runs(function () {
+				expect(changeHandlerCalled).toEqual(false);
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+			});
+		});
+
+		it('should not emit changes in a file from a newly created subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				createdFolder = folder + "/new_nested_dir"
+				fp1 = createdFolder + "/new_file2.txt",
+				fileCreated = false,
+				changeHandlerCalled = false;
+
+			expect(function(){watch.onChange({})}).toThrow();
+			watch.add(folder).onChange(function(file,prev,curr){
+				if (fileCreated === false) {
+					fileCreated = true;
+					expect(file).toBe(folder);
+
+					// Create a new file file
+					fs.writeFileSync(fp1, stime);
+				} else {
+					changeHandlerCalled = true;
+				}
+			});
+
+			fs.mkdirSync(createdFolder, "0755");
+
+			waits(20*1000);
+
+			runs(function () {
+				expect(changeHandlerCalled).toEqual(false);
+
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+
+				fs.unlinkSync(fp1);
+				fs.rmdirSync(createdFolder);
+			});
+		});
+	});
+
+	describe('Recursive watching', function(){
+
+		it('should emit a change when a file is changed inside a subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				fp1 = folder + "/nested_folder/file1.txt";
+
+			expect(function() {watch.onChange({})}).toThrow();
+			watch.add(folder, true).onChange(function(file, prev, curr) {
+				expect(file).toBe(fp1);
+				watch.clearListeners();
+				watch.remove(folder, true);
+				expect(watch.listeners("change").length).toBe(0);
+				asyncSpecDone();
+			});
+			fs.writeFileSync(fp1, stime);
+
+			asyncSpecWait.timeout = 20 * 1000;
+			asyncSpecWait();
+		});
+
+		it('should emit a change when a file is changed in a newly created subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				createdFolder = folder + "/new_nested_dir"
+				fp1 = createdFolder + "/new_file2.txt",
+				fileCreated = false;
+
+			expect(function(){watch.onChange({})}).toThrow();
+			watch.add(folder, true).onChange(function(file,prev,curr){
+				if (fileCreated === false) {
+                    fileCreated = true;
+                    expect(file).toBe(folder);
+
+					// Create a new file file
+					fs.writeFileSync(fp1, stime);
+				} else {
+					expect(file).toBe(createdFolder);
+					watch.clearListeners();
+					watch.remove(folder, true);
+					expect(watch.listeners("change").length).toBe(0);
+
+					fs.unlinkSync(fp1);
+					fs.rmdirSync(createdFolder);
+					asyncSpecDone();
+				}
+			});
+
+			fs.mkdirSync(createdFolder, "0755");
+
+			asyncSpecWait.timeout = 20 * 1000;
+			asyncSpecWait();
+		});
 	});
 });
 
