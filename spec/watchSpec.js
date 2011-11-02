@@ -85,32 +85,32 @@ describe('watch module test adding dirs', function(){
 			changed_file = "",
   			counter = 0;
   			
-  		expect(function(){watch.onChange({})}).toThrow();	
+		expect(function(){watch.onChange({})}).toThrow();	
 		watch.add(__dirname+"/tmp").onChange(function(file,prev,curr){
-  			counter ++;
-  			event_detected = true;
-  			stime = new Date().toUTCString();  	
-  			changed_file = file;	
-  		});
+			counter ++;
+			event_detected = true;
+			stime = new Date().toUTCString();  	
+			changed_file = file;	
+		});
   		
-  		waitsFor(function() {
-  		    if(event_detected){
-  		    	if(counter>0){
-  		    		asyncSpecDone();
-  		    		expect(fp1).toBe(changed_file);
-  		    		
-  		    		watch.clearListeners();
-  		    		watch.remove(__dirname+"/tmp");
-  		    		expect(watch.listeners("change").length).toBe(0);
-  		    		return true;
-  		    	}
-  		    }  	    
-  		    return false;
-    	}, "The event is not detected",10000);
+		waitsFor(function() {
+			if(event_detected){
+				if(counter>0){
+					asyncSpecDone();
+					expect(fp1).toBe(changed_file);
+					
+					watch.clearListeners();
+					watch.remove(__dirname+"/tmp");
+					expect(watch.listeners("change").length).toBe(0);
+					return true;
+				}
+			}  	    
+			return false;
+		}, "The event is not detected",10000);
     	
-    	asyncSpecWait.timeout = 10 * 1000;
-  		asyncSpecWait();
-    	fs.writeFileSync(fp1, stime);
+		asyncSpecWait.timeout = 10 * 1000;
+		asyncSpecWait();
+		fs.writeFileSync(fp1, stime);
 	}); 
 	
 	it('should emit a change on a watched dir when a new file is created', function(){
@@ -118,21 +118,20 @@ describe('watch module test adding dirs', function(){
 			stime = new Date().toUTCString(),
 			fp1 = folder + "/new_file1.txt";
   			
-  	expect(function(){watch.onChange({})}).toThrow();	
+		expect(function(){watch.onChange({})}).toThrow();	
 		watch.add(folder).onChange(function(file,prev,curr){
 			expect(file).toBe(folder);
   		
-  		watch.remove(folder);
-  		watch.clearListeners();
-  		expect(watch.listeners("change").length).toBe(0);
-  		fs.unlinkSync(fp1);
-  		asyncSpecDone();
-	  });
-  		
-  	fs.writeFileSync(fp1, stime);
+			watch.remove(folder);
+			watch.clearListeners();
+			expect(watch.listeners("change").length).toBe(0);
+			fs.unlinkSync(fp1);
+			asyncSpecDone();
+		});
+		fs.writeFileSync(fp1, stime);
   		    	
-    asyncSpecWait.timeout = 10 * 1000;
-  	asyncSpecWait();
+		asyncSpecWait.timeout = 10 * 1000;
+		asyncSpecWait();
 	});
 	
 	it('should emit a change when a newly created file is modified on a watched dir', function(){
@@ -140,58 +139,176 @@ describe('watch module test adding dirs', function(){
 			stime = new Date().toUTCString(),
 			fp1 = folder + "/new_file2.txt",
 			fileCreated = false;
-  			
-  	expect(function(){watch.onChange({})}).toThrow();	
+
+		expect(function(){watch.onChange({})}).toThrow();
 		watch.add(folder).onChange(function(file,prev,curr){
 			if (fileCreated === false) {
-			  fileCreated = true;
-    		expect(file).toBe(folder);
-  		
-  		  // modify the created file
-  		  fs.writeFileSync(fp1, stime + " - " + stime);
-  		} else {
-  		  expect(file).toBe(fp1);
-  		  
-  		  watch.clearListeners();
-    		watch.remove(folder);
-    		expect(watch.listeners("change").length).toBe(0);
-  		  
-    		fs.unlinkSync(fp1);
-  		  asyncSpecDone();
-		  }
-	  });
-	  
-  	fs.writeFileSync(fp1, stime);
-  		    	
-    asyncSpecWait.timeout = 20 * 1000;
-  	asyncSpecWait();
+				fileCreated = true;
+				expect(file).toBe(folder);
+
+				// modify the created file
+				fs.writeFileSync(fp1, stime + " - " + stime);
+			} else {
+				expect(file).toBe(fp1);
+
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+
+				fs.unlinkSync(fp1);
+				asyncSpecDone();
+			}
+		});
+
+		fs.writeFileSync(fp1, stime);
+
+		asyncSpecWait.timeout = 20 * 1000;
+		asyncSpecWait();
 	});
-	
+
 	it('should emit a change when a file is removed from a folder', function(){
 		var folder = __dirname + "/tmp",
 			stime = new Date().toUTCString(),
 			fp1 = folder + "/new_file3.txt",
 			fileCreated = false;
-  	
-  	fs.writeFileSync(fp1, stime);
-  	  	
-  	expect(function(){watch.onChange({})}).toThrow();	
+
+		fs.writeFileSync(fp1, stime);
+
+		expect(function(){watch.onChange({})}).toThrow();
 		watch.add(folder).onChange(function(file,prev,curr){
-  		expect(file).toBe(fp1);
-  		  
-  		watch.clearListeners();
-    	watch.remove(folder);
-    	expect(watch.listeners("change").length).toBe(0);
-  		  
-  		asyncSpecDone();
-	  });
-  		    	
-  	fs.unlinkSync(fp1);
-  		    	
-    asyncSpecWait.timeout = 10 * 1000;
-  	asyncSpecWait();
+
+			expect(file).toBe(folder);
+
+			watch.clearListeners();
+			watch.remove(folder);
+			expect(watch.listeners("change").length).toBe(0);
+
+            asyncSpecDone();
+		});
+
+		fs.unlinkSync(fp1);
+
+		asyncSpecWait.timeout = 10 * 1000;
+		asyncSpecWait();
 	});
-	
+
+
+	describe('Non-recursive watching', function(){
+
+		it('should not watch recursively by default', function(){
+			var folder = __dirname + "/tmp",
+			    stime = new Date().toUTCString(),
+			    fp1 = folder + "/nested_folder/file1.txt",
+			    changeHandlerCalled = false;
+
+			expect(function() {watch.onChange({})}).toThrow();
+			watch.add(folder).onChange(function(file, prev, curr) {
+				changeHandlerCalled = true;
+			});
+			fs.writeFileSync(fp1, stime);
+
+			waits(10*1000);
+
+			runs(function () {
+				expect(changeHandlerCalled).toEqual(false);
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+			});
+		});
+
+		it('should not emit changes in a file from a newly created subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				createdFolder = folder + "/new_nested_dir"
+				fp1 = createdFolder + "/new_file2.txt",
+				fileCreated = false,
+				changeHandlerCalled = false;
+
+			expect(function(){watch.onChange({})}).toThrow();
+			watch.add(folder).onChange(function(file,prev,curr){
+				if (fileCreated === false) {
+					fileCreated = true;
+					expect(file).toBe(folder);
+
+					// Create a new file file
+					fs.writeFileSync(fp1, stime);
+				} else {
+					changeHandlerCalled = true;
+				}
+			});
+
+			fs.mkdirSync(createdFolder, "0755");
+
+			waits(20*1000);
+
+			runs(function () {
+				expect(changeHandlerCalled).toEqual(false);
+
+				watch.clearListeners();
+				watch.remove(folder);
+				expect(watch.listeners("change").length).toBe(0);
+
+				fs.unlinkSync(fp1);
+				fs.rmdirSync(createdFolder);
+			});
+		});
+	});
+
+	describe('Recursive watching', function(){
+
+		it('should emit a change when a file is changed inside a subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				fp1 = folder + "/nested_folder/file1.txt";
+
+			expect(function() {watch.onChange({})}).toThrow();
+			watch.add(folder, true).onChange(function(file, prev, curr) {
+				expect(file).toBe(fp1);
+				watch.clearListeners();
+				watch.remove(folder, true);
+				expect(watch.listeners("change").length).toBe(0);
+				asyncSpecDone();
+			});
+			fs.writeFileSync(fp1, stime);
+
+			asyncSpecWait.timeout = 20 * 1000;
+			asyncSpecWait();
+		});
+
+		it('should emit a change when a file is changed in a newly created subfolder', function(){
+			var folder = __dirname + "/tmp",
+				stime = new Date().toUTCString(),
+				createdFolder = folder + "/new_nested_dir"
+				fp1 = createdFolder + "/new_file2.txt",
+				fileCreated = false;
+
+			expect(function(){watch.onChange({})}).toThrow();
+			watch.add(folder, true).onChange(function(file,prev,curr){
+				if (fileCreated === false) {
+                    fileCreated = true;
+                    expect(file).toBe(folder);
+
+					// Create a new file file
+					fs.writeFileSync(fp1, stime);
+				} else {
+					expect(file).toBe(createdFolder);
+					watch.clearListeners();
+					watch.remove(folder, true);
+					expect(watch.listeners("change").length).toBe(0);
+
+					fs.unlinkSync(fp1);
+					fs.rmdirSync(createdFolder);
+					asyncSpecDone();
+				}
+			});
+
+			fs.mkdirSync(createdFolder, "0755");
+
+			asyncSpecWait.timeout = 20 * 1000;
+			asyncSpecWait();
+		});
+	});
 });
 
 describe('watch module chainabiliy test', function(){

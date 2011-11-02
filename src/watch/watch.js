@@ -72,22 +72,32 @@ var WatchClass = function() {
     
     function Watch(options) {}
     
-    // ## Public method: add(string) ##
-    // String is an absolute or relative path
+    // ## Public method: add(path , [recursive]) ##
+    // `path` is an absolute or relative path
     // to a file or dir to add (watch),
+    //
+    // `recursive` is the flag to allow search in subfolders
+    // (false by default)
+    //
     // returns this object
     
-    Watch.prototype.add = function(str_file_or_path) {
-        return this.__handle(true, str_file_or_path);
+    Watch.prototype.add = function(str_file_or_path, recursive) {
+        recursive = recursive || false;
+        return this.__handle(true, str_file_or_path, recursive);
     };
     
-    // ## Public method: remove(string) ##
-    // String is a absolute or relative path
+    // ## Public method: remove(path, [recursive]) ##
+    // `path` is a absolute or relative path
     // to a file or dir to remove (unwatch),
+    //
+    // `recursive` is the flag to allow search in subfolders (false by
+    // default)
+    //
     // returns this object
     
-    Watch.prototype.remove = function(str_file_or_path) {
-        return this.__handle(false, str_file_or_path);
+    Watch.prototype.remove = function(str_file_or_path, recursive) {
+        recursive = recursive || false;
+        return this.__handle(false, str_file_or_path, recursive);
     };
     
     // ## Public method: onChange(callback) ##
@@ -137,7 +147,7 @@ var WatchClass = function() {
     //
     // returns this object
     
-    Watch.prototype.__handle = function(add, str_file_or_path) {
+    Watch.prototype.__handle = function(add, str_file_or_path, recursive) {
         if (str_file_or_path.substring(0, 1) == ".") {
             str_file_or_path = process.cwd() + "/" + str_file_or_path;
         }
@@ -146,22 +156,26 @@ var WatchClass = function() {
             return this.__file(add, str_file_or_path);
         }
         if (fs.statSync(str_file_or_path).isDirectory()) {
-            return this.__dir(add, str_file_or_path);
+            return this.__dir(add, str_file_or_path, recursive);
         }
     };
     
     // ## Private method: __dir(boolean, string) ##
     // walk a dir and pass the files with the add boolean
-    Watch.prototype.__dir = function(add, dir) {
+    Watch.prototype.__dir = function(add, dir, recursive) {
         var files = fs.readdirSync(dir);
         for (var i = 0; i < files.length; i++) {
             var full_path = dir + "/" + files[i];
             if (fs.statSync(full_path).isFile()) {
                 this.__file(add, full_path);
+                // If we read a directory, call recursively to `__dir` method
+                // to be able to handle changes in files inside this directory
+            } else if (recursive && fs.statSync(full_path).isDirectory()) {
+                this.__dir(add, full_path, true);
             }
         }
         // Start watching the dir also
-        this.__file(add, dir);
+        this.__file(add, dir, recursive);
 
         return this;
     };
@@ -170,32 +184,34 @@ var WatchClass = function() {
     // Finally add (add==true) or remove a
     // file from watching
     
-    Watch.prototype.__file = function(add, file) {
+    Watch.prototype.__file = function(add, file, recursive) {
+        recursive = recursive || false;
         var self = this;
         if (add) {
             fs.watchFile(file, function(prev, curr) {
-              try{
-                // If the modified file is a folder, Recheck it again for newly
-                // created files or removed files
-                if (fs.statSync(file) && fs.statSync(file).isDirectory()) {
-                    self.__handle(false, file);
-                    self.__handle(true, file);
-                    if (prev.nlink !== curr.nlink) {
+                try {
+                    // If the modified file is a folder, Recheck it again for newly
+                    // created files or removed files
+                    if (fs.statSync(file) && fs.statSync(file).isDirectory()) {
+                        self.__handle(false, file, recursive);
+                        self.__handle(true, file, recursive);
+                        if (prev.nlink !== curr.nlink) {
+                            self.emit("change", file, prev, curr);
+                        }
+                        // Check if the modified time has changed and emit event
+                    } else if (prev.mtime.getTime() !== curr.mtime.getTime()) {
                         self.emit("change", file, prev, curr);
                     }
-                // Check if the modified time has changed and emit event
-                } else if (prev.mtime.getTime() != curr.mtime.getTime()) {
-                    self.emit("change", file, prev, curr);
                 }
-              }
-              // A file inside the directory has been removed, emit event  
-              catch(e) {
-                if (e.code === 'ENOENT') {
-                  self.emit("change", file, prev, curr);
-                  return;
+                // A file inside the directory has been removed, emit event  
+                catch(e) {
+                    if (e.code === 'ENOENT') {
+                        // Dont emit any event when removing a file (the event is being also
+                        // emited by the parent folder)
+                        return;
+                    }
+                    throw(e);
                 }
-                throw(e);
-              }
             });
         } else {
             fs.unwatchFile(file);
